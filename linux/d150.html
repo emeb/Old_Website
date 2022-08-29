@@ -1,0 +1,187 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Eric Brombaugh">
+  <meta name="GENERATOR"
+ content="Mozilla/4.72 [en] (X11; U; Linux 2.2.14-5.0 i686) [Netscape]">
+  <title>Olympus D-150 Camera</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+<h2>Olympus D-150 Camera</h2>
+<h3>Introduction</h3>
+In March 2002, I spotted a good deal on an Olympus D-150 digital camera
+at my local Costco. At ~$150 it was too good to pass up, with 1.3
+Mpixel resolution and 3x Optical zoom - lower resolution than what was
+commonly available, but compact and cheap. After doing a cursory glance
+at the major digital photography sites (my favorite is <a
+ href="http://www.dpreview.com">here</a>) and not turning up anything
+seriously negative, I bought one. Once I got it home and cut it out of
+the plastic package, I asked the obvious question: Is it compatible
+with Linux? To my disappointment, the answer was "Almost".
+<p>The reason for this is detailed <a
+ href="http://www.mail-archive.com/aps%40ooops.de/msg00007.html">here</a>:
+apparently, the good folks at Olympus screwed up and got the bulk data
+signature wrong - it should have been "USBS", but the D-150 sends
+"USBU". Windows doesn't check the signature and doesn't care. Linux is
+more careful and rejects the apparently malformed data. </p>
+<p>The authors of the Linux USB Storage driver have chosen not to
+support the malformed Olympus data, but they are good enough to suggest
+how we might alter their driver to handle the error. Unfortunately, the
+recommended fix also breaks the driver for other compliant devices. Of
+course there's no need for this - we can support both the broken D-150
+as well as the rest of the world with only a slight impairment of our
+ability to detect errors in the USB interface. </p>
+<p>My patch for the USB Storage driver declares an additional bulk data
+signature and checks for both this one and the regular one. Either one
+will satisfy the driver - anything else is considered erroneous and
+results in the data being rejected. The patch is against the 2.4.18
+kernel, but it's simple and should be easily backported to any other
+2.4.x kernel. </p>
+<h3>Great News (2003-06-09)</h3>
+Several Linux Distros are including this patch (or one like it): <br>
+<div style="margin-left: 40px;">
+<ul>
+  <li>Lycoris has applied my patch to their standard kernel (They even
+thanked me!).</li>
+</ul>
+<ul>
+  <li>RedHat has patched their kernel with a similar fix to the one
+included here. I'm running kernel-2.4.20-18.9 and the Olympus support
+is included!<br>
+  </li>
+</ul>
+</div>
+<h3>More Great News (2003-11-23)</h3>
+Starting with kernel 2.4.22 this patch is no longer necessary. The stock
+USB storage driver has been updated to recognise Olympus cameras.</p> 
+<h3>Compiling and Using</h3>
+To begin, grab the patch for your kernel from below.
+<p>uncompress the patch: gzip d150-patch.2.4.xx.gz<br>
+cd to <your kernel="" source="">/drivers/usb/storage<br>
+apply the patch: patch -p0 &lt; (path to the patch)/d150-patch.2.4.xx<br>
+recompile your kernel modules &amp; install them. If you don't know how
+to do this, google around for instructions - I can't really help too
+much with your unique system configuration. </your></p>
+<p>Once you've got the updated usb-storage driver installed, plugging
+in your D-150 camera should load the driver module and hook it to the
+scsi subsystem. Check the /proc/scsi/scsi file for details - you should
+see the camera listed in there. If you see it, mount it someplace
+convenient and start copying to/from it. Remember to unmount it before
+you unplug the USB cable and everything should be just fine. </p>
+<h3>Automatic Mounting</h3>
+There are a lot of ways to automatically mount a usb-storage device.
+Here are a few that I've tried:<br>
+<br>
+<h4>Hotplug<br>
+</h4>
+On my RedHat 7.3 system, I have in the past set up the HotPlug system
+to automatically mount the camera when it is connected to the USB port,
+but for some unknown reason this has ceased to work (I suspect it's due
+to the fact that the script is called 'usb-storage' which is
+specifically a no-no). You can try it though by following these steps:<br>
+<br>
+First create the directory /mnt/camera, then add the following line to
+your /etc/fstab file:
+<p>/dev/sda1               /mnt/camera             vfat    noauto,owner
+0 0 </p>
+<p>Finally, create the file /etc/hotplug/usb/usb-storage with the
+following: </p>
+<p>#!/bin/csh<br>
+# hotplug script to mount the usb-storage device<br>
+# on /mnt/camera<br>
+mount /mnt/camera </p>
+<p>Use 'chmod' to make this file executable ('chmod +x usb-storage').
+After rebooting, anytime you connect the camera to the computer it will
+automatically be mounted. You will still need to unmount the camera
+manually before disconnecting it. </p>
+<p>If you're running 'magicdev' as on my RH7.3/Gnome system, an icon
+for the camera will appear on your desktop when the HotPlug system
+mounts it. You can then unmount it from the GUI when necessary without
+becoming root. Yay magicdev!<br>
+</p>
+<h4>Autofs</h4>
+This seems to work, but has the disadvantage that you must know that
+you've connected the camera. Basically the Linux autofs system will
+automatically mount a filesystem when you try to access it and the
+device containing the filesystem is available. To configure this, first
+edit the /etc/auto.master file and uncomment the line referring to the
+misc system:<br>
+<br>
+/misc&nbsp;&nbsp;&nbsp; /etc/auto.misc&nbsp;&nbsp;&nbsp; --timeout=60<br>
+<br>
+Then, add the following line the the /etc/auto.misc file:<br>
+<br>
+usb&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; -fstype=auto&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; :/dev/sda1<br>
+<br>
+Then, start the autofs system:<br>
+<br>
+/etc/init.d/autofs start<br>
+<br>
+Now whenever you access the directory /misc/usb, if the camera is
+plugged in it will be mounted there.<br>
+<br>
+You still have to unmount the camera by hand before unplugging it
+though.<br>
+<h4>Nautilus</h4>
+You can get the Nautilus desktop to mount the usb-storage device for
+you as well. First, add the following line to /etc/fstab:<br>
+<br>
+/dev/sda1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/mnt/usb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+auto&nbsp;&nbsp;&nbsp; rw,noauto,user&nbsp; 0 0<br>
+<br>
+then add the directory /mnt/usb<br>
+<br>
+mkdir /mnt/usb.<br>
+<br>
+Now, &nbsp;log out and log back into your user session. Right-click on
+the desktop and select the Disks-&gt;usb item. This should mount the
+camera on your desktop. You can unmount it by right-clicking on the
+icon and selecting Unmount.<br>
+<h4>Automount Improvements</h4>
+All of these techniques are hampered by the fact that you have to
+hard-code the device (/dev/sda1) into the configuration. If you have
+more than one usb-storage device, this breaks down since they are
+allocated different names as they are discovered (sda1, sdb1, etc).
+Ideally, there would be a usb-storage hotplug script that could
+determine the proper device and mount it. So far I haven't figured out
+how to make that work.<br>
+<h3>Future Improvements</h3>
+With the present patch, signatures of either 'USBU' or 'USBS' are
+sufficient to declare a bulk data transfer as good. A more robust error
+detection scheme would key off the vendor/device id so that only the
+correct signature would be selected according to the device which sent
+the data.
+<p>Since the ambiguity in the present patch is just one bit out of
+thousands in a bulk data transfer, this probably isn't a big enough
+improvement to make it worthwhile. I don't believe that the USB
+protocol applies any Forward Error Correction or detection such as CRCs
+or checksums, so the only errors that could be detected by the Bulk
+Data Signature are errors within the signature itself. </p>
+<h3>Supported Models</h3>
+The following cameras are known to work with this patch:<br>
+Olympus D-150 Zoom<br>
+Olympus C-220 Zoom<br>
+Olympus D-520 Zoom
+<p> If you know of any others, please let me know. </p>
+<h3>Download</h3>
+<br>
+For 2.4.18 kernels: <a href="d150-patch.2.4.18.gz">d150-patch.2.4.18.gz</a>.<br>
+For 2.4.19 kernels: <a href="d150-patch.2.4.19.gz">d150-patch.2.4.19.gz</a>.<br>
+For 2.4.20 kernels: <a href="d150-patch.2.4.20.gz">d150-patch.2.4.20.gz</a>.<br>
+For 2.4.21 kernels: <a href="d150-patch.2.4.21.gz">d150-patch.2.4.21.gz</a>.<br>
+For 2.4.22 kernels: No patch necessary!
+<p>Please let me know if this is useful for you. </p>
+<p><a href="linux.html">Return to Linux page.</a></p>
+<h5><b>Last Updated</b></h5>
+:2003-11-23
+<h5><b>Comments to:</b></h5>
+<a href="mailto:ebrombaugh1@cox.net">Eric Brombaugh</a><br>
+&nbsp;<br>
+</body>
+</html>

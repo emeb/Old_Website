@@ -1,0 +1,124 @@
+diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
+index 8c1961d..7d9c5e8 100644
+--- a/arch/arm/mach-omap2/board-omap3beagle.c
++++ b/arch/arm/mach-omap2/board-omap3beagle.c
+@@ -23,6 +23,7 @@
+ #include <linux/gpio.h>
+ #include <linux/input.h>
+ #include <linux/gpio_keys.h>
++#include <linux/spi/spi.h>
+ 
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+@@ -37,6 +38,7 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+ #include <asm/mach/flash.h>
++#include <mach/mcspi.h>
+ 
+ #include <mach/board.h>
+ #include <mach/usb.h>
+@@ -307,6 +309,54 @@ static int __init omap3_beagle_i2c_init(void)
+ 	return 0;
+ }
+ 
++/* vvvv EMEB's SPI stuff vvvv */
++
++static struct spi_board_info beagle_mcspi_board_info[] = {
++	// spi 3.0
++	{
++		.modalias	= "spidev",
++		.max_speed_hz	= 48000000, //48 Mbps
++		.bus_num	= 3,
++		.chip_select	= 0,	
++		.mode = SPI_MODE_1,
++	},
++
++	// spi 3.1
++	{
++		.modalias	= "spidev",
++		.max_speed_hz	= 48000000, //48 Mbps
++		.bus_num	= 3,
++		.chip_select	= 1,	
++		.mode = SPI_MODE_1,
++	},
++
++	// spi 4.0
++	{
++		.modalias	= "spidev",
++		.max_speed_hz	= 48000000, //48 Mbps
++		.bus_num	= 4,
++		.chip_select	= 0,	
++		.mode = SPI_MODE_1,
++	},
++};
++
++static void __init omap3_beagle_init_spi(void)
++{
++	/* set the pin muxes for SPI4*/
++	omap_cfg_reg(Y21_34XX_MCSPI4_CLK);
++	omap_cfg_reg(V21_34XX_MCSPI4_SIMO);
++	omap_cfg_reg(U21_34XX_MCSPI4_SOMI);
++	omap_cfg_reg(K26_34XX_MCSPI4_CS0);
++
++	/* hook the spi ports to the spidev driver */
++	spi_register_board_info(beagle_mcspi_board_info,
++		ARRAY_SIZE(beagle_mcspi_board_info));
++
++	printk(KERN_ERR "EMEB: Using McSPI for SPI\n");
++}
++
++/* ^^^^ EMEB's SPI stuff ^^^^ */
++
+ static void __init omap3_beagle_init_irq(void)
+ {
+ 	omap2_init_common_hw(mt46h32m32lf6_sdrc_params);
+@@ -510,6 +560,9 @@ static void __init omap3_beagle_init(void)
+ 	omap_board_config_size = ARRAY_SIZE(omap3_beagle_config);
+ 	omap_serial_init();
+ 
++	/* EMEB's spi stuff */
++	omap3_beagle_init_spi();
++
+ 	omap_cfg_reg(J25_34XX_GPIO170);
+ 
+ 	usb_musb_init();
+diff --git a/arch/arm/mach-omap2/mux.c b/arch/arm/mach-omap2/mux.c
+index 026c4fc..fcce61a 100644
+--- a/arch/arm/mach-omap2/mux.c
++++ b/arch/arm/mach-omap2/mux.c
+@@ -486,6 +486,16 @@ MUX_CFG_34XX("H19_34XX_GPIO164_OUT", 0x19c,
+ 		OMAP34XX_MUX_MODE4 | OMAP34XX_PIN_OUTPUT)
+ MUX_CFG_34XX("J25_34XX_GPIO170", 0x1c6,
+ 		OMAP34XX_MUX_MODE4 | OMAP34XX_PIN_INPUT)
++		
++/* MCSPI4 */
++MUX_CFG_34XX("Y21_34XX_MCSPI4_CLK", 0x18c,
++		OMAP34XX_MUX_MODE1 | OMAP34XX_PIN_INPUT)
++MUX_CFG_34XX("V21_34XX_MCSPI4_SIMO", 0x190,
++		OMAP34XX_MUX_MODE1 | OMAP34XX_PIN_OUTPUT)
++MUX_CFG_34XX("U21_34XX_MCSPI4_SOMI", 0x192,
++		OMAP34XX_MUX_MODE1 | OMAP34XX_PIN_INPUT_PULLUP)
++MUX_CFG_34XX("K26_34XX_MCSPI4_CS0", 0x196,
++		OMAP34XX_MUX_MODE1 | OMAP34XX_PIN_OUTPUT)
+ };
+ 
+ #define OMAP34XX_PINS_SZ	ARRAY_SIZE(omap34xx_pins)
+diff --git a/arch/arm/plat-omap/include/mach/mux.h b/arch/arm/plat-omap/include/mach/mux.h
+index f7e298a..54d72f3 100644
+--- a/arch/arm/plat-omap/include/mach/mux.h
++++ b/arch/arm/plat-omap/include/mach/mux.h
+@@ -803,6 +803,13 @@ enum omap34xx_index {
+ 	AE5_34XX_GPIO143,
+ 	H19_34XX_GPIO164_OUT,
+ 	J25_34XX_GPIO170,
++	
++	/* MCSPI4 */
++	Y21_34XX_MCSPI4_CLK,
++	V21_34XX_MCSPI4_SIMO,
++	U21_34XX_MCSPI4_SOMI,
++	K26_34XX_MCSPI4_CS0,
++
+ };
+ 
+ struct omap_mux_cfg {

@@ -1,0 +1,96 @@
+Section "Files"
+    RgbPath	"/usr/X11R6/lib/X11/rgb"
+    FontPath   "/usr/X11R6/lib/X11/fonts/misc/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/:unscaled"
+    FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/:unscaled"
+    FontPath   "/usr/X11R6/lib/X11/fonts/Type1/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/Speedo/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/75dpi/"
+    FontPath   "/usr/X11R6/lib/X11/fonts/100dpi/"
+#    ModulePath "/usr/X11R6/lib/modules"
+EndSection
+
+#Section "Module"
+#    Load "xf86Jstk.so"
+#EndSection
+
+Section "ServerFlags"
+#    NoTrapSignals
+#    DontZap
+#    DontZoom
+#    DisableVidModeExtension
+#    AllowNonLocalXvidtune
+#    DisableModInDev
+#    AllowNonLocalModInDev
+EndSection
+
+Section "Keyboard"
+    Protocol	"Standard"
+    AutoRepeat	500 5
+#    XkbDisable
+    XkbKeymap   "xfree86(us)"
+EndSection
+
+Section "Pointer"
+#    Protocol    "Microsoft"
+#    Device      "/dev/ttyS0"
+    Protocol    "PS/2"
+    Device      "/dev/psaux"
+    Emulate3Buttons
+    Emulate3Timeout    50
+EndSection
+
+Section "Monitor"
+    Identifier  "Generic Multisync"
+    VendorName  "Unknown"
+    ModelName   "Unknown"
+    HorizSync   30-64
+    VertRefresh 50-100
+
+# 640x480 @ 60 Hz, 31.5 kHz hsync
+Modeline "640x480"     25.175 640  664  760  800   480  491  493  525
+# 800x600 @ 60 Hz, 37.8 kHz hsync
+Modeline "800x600"     40     800  840  968 1056   600  601  605  628 +hsync +vsync
+# 1024x768 @ 60 Hz, 48.4 kHz hsync
+Modeline "1024x768"    65    1024 1032 1176 1344   768  771  777  806 -hsync -vsync
+
+EndSection
+
+Section "Device"
+    Identifier	"NeoMagic"
+#    Chipset	"NM2160"
+#    IOBase	0xfea00000
+#    MemBase	0xfd000000
+#    VideoRam	2048
+#    DacSpeed	90
+#    Option	"linear"
+#    Option	"nolinear"
+#    Option	"sw_cursor"
+#    Option	"hw_cursor"
+#    Option	"no_accel"
+#    Option	"intern_disp"
+#    Option	"extern_disp"
+#    Option	"mmio"
+#    Option	"no_mmio"
+#    Option	"lcd_center"
+#    Option	"no_stretch"
+EndSection
+
+Section "Screen"
+    Driver      "svga"
+    Device      "NeoMagic"
+    Monitor     "Generic Multisync"
+#    Subsection "Display"
+#        Depth       8
+#        Modes       "1024x768" "800x600" "640x480"
+#    EndSubsection
+    Subsection "Display"
+        Depth       16
+#        Modes       "1024x768" "800x600" "640x480"
+        Modes       "800x600"
+    EndSubsection
+#    Subsection "Display"
+#        Depth       24
+#        Modes       "800x600" "640x480"
+#    EndSubsection
+EndSection

@@ -1,0 +1,7 @@
+alias scsi_hostadapter aha152x 
+options aha152x aha152x=0x140,11 
+alias sound sb 
+alias midi opl3 
+options opl3 io=0x388 
+options sb io=0x220 irq=5 dma=1 
+alias eth0 3c509 
