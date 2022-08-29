@@ -1,10 +1,3 @@
-xml version="1.0" encoding="utf-8"?
-
-
-
-No Knead Bread
-
-
 # No Knead Bread
 
 
@@ -153,9 +146,6 @@ probably expanded to twice the original volume.
 
 
 :2014-04-26
-
-[![Valid HTML 4.01 Transitional](http://www.w3.org/Icons/valid-html401)](http://validator.w3.org/check?uri=referer)
-
 
 
 
