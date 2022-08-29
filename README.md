@@ -1,25 +1,14 @@
-xml version="1.0" encoding="utf-8"?
-
-
-
-Eric Brombaugh's Miscellaneous stuff
-
-
-
 # 
 Eric Brombaugh's Miscellaneous stuff
 
-[Linux](linux/index.html) - Some old stuff that I used to do
-back in the days when Linux was new and not everything worked out of the box
-as it seems to now.
-[Synth DIY projects](synth/index.html) - Some hardware for
-making noises.
+[Linux](linux) - Some old stuff that I used to do back in the days when Linux
+was new and not everything worked out of the box as it seems to now.
 
-[Embedded computing projects](embedded/index.html) -
-Small computers in small applications.
+[Synth DIY projects](synth) - Some hardware for making noises.
 
-[Radio projects](radio/index.html) -
-RF, communications, etc.
+[Embedded computing projects](embedded) - Small computers in small applications.
+
+[Radio projects](radio) - RF, communications, etc.
 
 
 **Last Updated**
@@ -28,8 +17,6 @@ RF, communications, etc.
 **Comments to:**
 [Eric Brombaugh](mailto:ebrombaugh1@cox.net)
 
-Big thanks to Adam Schabtach / Studionebula for hosting my site.
-
-[Valid HTML 4.01 Transitional](http://validator.w3.org/check?uri=referer)
+Big thanks to Adam Schabtach / Studionebula for previously hosting my site.
 
 
